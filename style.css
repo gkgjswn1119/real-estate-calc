@@ -322,3 +322,149 @@ input::placeholder {
     font-size: 18px;
   }
 }
+
+/* ── Tab bar ─────────────────────────────── */
+.tab-bar {
+  background: var(--card-bg);
+  display: flex;
+  border-bottom: 1.5px solid var(--border);
+  position: sticky;
+  top: 58px;
+  z-index: 15;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.tab {
+  flex: 1;
+  padding: 13px 10px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+  margin-bottom: -1.5px;
+  transition: color 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: -0.2px;
+}
+
+.tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+/* ── Graph page ──────────────────────────── */
+.g-calc-btn {
+  width: 100%;
+}
+
+/* 평당 매매가 */
+.g-ppp-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 4px;
+}
+
+.g-ppp-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+.g-ppp-value-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+
+.g-ppp-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: -0.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.g-ppp-unit {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* 섹션 구분선 */
+.g-section-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 16px -20px;
+}
+
+/* 표 */
+.g-table-wrap {
+  overflow-x: auto;
+}
+
+.g-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.g-table th {
+  padding: 7px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  border-bottom: 1.5px solid var(--border);
+  text-align: left;
+}
+
+.g-table th:last-child,
+.g-table td:last-child {
+  text-align: right;
+}
+
+.g-table td {
+  padding: 9px 10px;
+  font-weight: 500;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+
+.g-table tr:last-child td {
+  border-bottom: none;
+}
+
+.g-table tr:nth-child(even) td {
+  background: #F8FAFC;
+}
+
+/* 차트 */
+.g-chart-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.g-chart-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.g-result-card {
+  animation: slideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}

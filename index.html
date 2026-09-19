@@ -19,111 +19,177 @@
       <h1>부동산 수익률 계산기</h1>
     </header>
 
-    <main class="app-main">
-      <div class="card input-card">
+    <!-- 탭 내비게이션 -->
+    <nav class="tab-bar">
+      <button class="tab active" data-tab="calc">수익률 계산기</button>
+      <button class="tab" data-tab="graph">면적별 분석</button>
+    </nav>
 
-        <!-- 전용면적 -->
-        <div class="field-group">
-          <label for="area">전용면적</label>
-          <div class="input-wrapper" id="wrap-area">
-            <input type="text" id="area" inputmode="decimal" placeholder="0" autocomplete="off">
-            <span class="unit">평</span>
+    <!-- ── 페이지 1: 수익률 계산기 ── -->
+    <div id="page-calc" class="page">
+      <main class="app-main">
+        <div class="card input-card">
+
+          <div class="field-group">
+            <label for="area">전용면적</label>
+            <div class="input-wrapper" id="wrap-area">
+              <input type="text" id="area" inputmode="decimal" placeholder="0" autocomplete="off">
+              <span class="unit">평</span>
+            </div>
           </div>
-        </div>
 
-        <!-- 임대료 / 평당 임대료 -->
-        <div class="field-row">
-          <div class="field-group half">
-            <label for="rent">임대료</label>
-            <div class="input-wrapper" id="wrap-rent">
-              <input type="text" id="rent" inputmode="numeric" placeholder="0" autocomplete="off">
+          <div class="field-row">
+            <div class="field-group half">
+              <label for="rent">임대료</label>
+              <div class="input-wrapper" id="wrap-rent">
+                <input type="text" id="rent" inputmode="numeric" placeholder="0" autocomplete="off">
+                <span class="unit">원</span>
+              </div>
+            </div>
+            <div class="bi-icon">↔</div>
+            <div class="field-group half">
+              <label for="rentPerPyeong">평당 임대료</label>
+              <div class="input-wrapper" id="wrap-rentPerPyeong">
+                <input type="text" id="rentPerPyeong" inputmode="numeric" placeholder="0" autocomplete="off">
+                <span class="unit">원</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="deposit">보증금</label>
+            <div class="input-wrapper" id="wrap-deposit">
+              <input type="text" id="deposit" inputmode="numeric" placeholder="0" autocomplete="off">
+              <span class="unit">원</span>
+            </div>
+            <span class="field-hint" id="depositHint"></span>
+          </div>
+
+          <div class="field-group">
+            <label for="salePrice">매매가</label>
+            <div class="input-wrapper" id="wrap-salePrice">
+              <input type="text" id="salePrice" inputmode="numeric" placeholder="0" autocomplete="off">
               <span class="unit">원</span>
             </div>
           </div>
-          <div class="bi-icon">↔</div>
-          <div class="field-group half">
-            <label for="rentPerPyeong">평당 임대료</label>
-            <div class="input-wrapper" id="wrap-rentPerPyeong">
-              <input type="text" id="rentPerPyeong" inputmode="numeric" placeholder="0" autocomplete="off">
-              <span class="unit">원</span>
+
+          <div class="field-group">
+            <label for="yieldRate">수익률</label>
+            <div class="input-wrapper" id="wrap-yieldRate">
+              <input type="text" id="yieldRate" inputmode="decimal" placeholder="0" autocomplete="off">
+              <span class="unit">%</span>
+            </div>
+          </div>
+
+          <div class="error-message" id="errorMessage"></div>
+
+          <div class="button-group">
+            <button class="btn btn-primary" id="btnSalePrice" onclick="calcBySalePrice()">매매가 기준</button>
+            <button class="btn btn-primary" id="btnYield" onclick="calcByYield()">수익률 기준</button>
+          </div>
+          <button class="btn btn-reset" onclick="resetAll()">RESET</button>
+        </div>
+
+        <div class="card result-card" id="resultCard">
+          <div class="result-header">
+            <h2 class="result-title">📊 계산 결과</h2>
+            <span class="result-badge" id="resultMode"></span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">평당 매매가</span>
+            <div class="result-value-wrap">
+              <span class="result-value" id="resultPricePerPyeong">—</span>
+              <span class="result-unit">원</span>
+            </div>
+          </div>
+          <div class="result-divider"></div>
+          <div class="result-row">
+            <span class="result-label">매매가</span>
+            <div class="result-value-wrap">
+              <span class="result-value" id="resultSalePrice">—</span>
+              <span class="result-unit">원</span>
+            </div>
+          </div>
+          <div class="result-divider"></div>
+          <div class="result-row">
+            <span class="result-label">수익률</span>
+            <div class="result-value-wrap">
+              <span class="result-value" id="resultYield">—</span>
+              <span class="result-unit">%</span>
             </div>
           </div>
         </div>
+      </main>
+    </div>
 
-        <!-- 보증금 -->
-        <div class="field-group">
-          <label for="deposit">보증금</label>
-          <div class="input-wrapper" id="wrap-deposit">
-            <input type="text" id="deposit" inputmode="numeric" placeholder="0" autocomplete="off">
-            <span class="unit">원</span>
+    <!-- ── 페이지 2: 면적별 분석 ── -->
+    <div id="page-graph" class="page" style="display:none">
+      <main class="app-main">
+
+        <!-- 입력 카드 -->
+        <div class="card input-card">
+          <div class="field-row">
+            <div class="field-group half">
+              <label for="g-rpp">평당 임대료</label>
+              <div class="input-wrapper" id="wrap-g-rpp">
+                <input type="text" id="g-rpp" inputmode="numeric" placeholder="0" autocomplete="off">
+                <span class="unit">원</span>
+              </div>
+            </div>
+            <div class="field-group half">
+              <label for="g-yield">수익률</label>
+              <div class="input-wrapper" id="wrap-g-yield">
+                <input type="text" id="g-yield" inputmode="decimal" placeholder="0" autocomplete="off">
+                <span class="unit">%</span>
+              </div>
+            </div>
           </div>
-          <span class="field-hint" id="depositHint"></span>
+          <div class="error-message" id="g-error"></div>
+          <button class="btn btn-primary g-calc-btn" onclick="calcGraph()">계산</button>
         </div>
 
-        <!-- 매매가 -->
-        <div class="field-group">
-          <label for="salePrice">매매가</label>
-          <div class="input-wrapper" id="wrap-salePrice">
-            <input type="text" id="salePrice" inputmode="numeric" placeholder="0" autocomplete="off">
-            <span class="unit">원</span>
+        <!-- 결과 카드 -->
+        <div class="card g-result-card" id="g-result-card" style="display:none">
+
+          <!-- ① 평당 매매가 -->
+          <div class="g-ppp-display">
+            <span class="g-ppp-label">평당 매매가</span>
+            <div class="g-ppp-value-wrap">
+              <span class="g-ppp-value" id="g-ppp-value">—</span>
+              <span class="g-ppp-unit">원</span>
+            </div>
           </div>
-        </div>
 
-        <!-- 수익률 -->
-        <div class="field-group">
-          <label for="yieldRate">수익률</label>
-          <div class="input-wrapper" id="wrap-yieldRate">
-            <input type="text" id="yieldRate" inputmode="decimal" placeholder="0" autocomplete="off">
-            <span class="unit">%</span>
+          <div class="g-section-divider"></div>
+
+          <!-- ② 표 -->
+          <div class="g-table-wrap">
+            <table class="g-table">
+              <thead>
+                <tr>
+                  <th>전용면적</th>
+                  <th>총 매매가</th>
+                </tr>
+              </thead>
+              <tbody id="g-table-body"></tbody>
+            </table>
           </div>
-        </div>
 
-        <!-- 오류 메시지 -->
-        <div class="error-message" id="errorMessage"></div>
+          <div class="g-section-divider"></div>
 
-        <!-- 계산 버튼 -->
-        <div class="button-group">
-          <button class="btn btn-primary" id="btnSalePrice" onclick="calcBySalePrice()">매매가 기준</button>
-          <button class="btn btn-primary" id="btnYield" onclick="calcByYield()">수익률 기준</button>
-        </div>
-        <button class="btn btn-reset" onclick="resetAll()">RESET</button>
-      </div>
-
-      <!-- 결과 카드 -->
-      <div class="card result-card" id="resultCard">
-        <div class="result-header">
-          <h2 class="result-title">📊 계산 결과</h2>
-          <span class="result-badge" id="resultMode"></span>
-        </div>
-
-        <div class="result-row">
-          <span class="result-label">평당 매매가</span>
-          <div class="result-value-wrap">
-            <span class="result-value" id="resultPricePerPyeong">—</span>
-            <span class="result-unit">원</span>
+          <!-- ③ 그래프 -->
+          <p class="g-chart-label">전용면적별 총 매매가 추이</p>
+          <div class="g-chart-wrap">
+            <canvas id="g-chart"></canvas>
           </div>
-        </div>
-        <div class="result-divider"></div>
-        <div class="result-row">
-          <span class="result-label">매매가</span>
-          <div class="result-value-wrap">
-            <span class="result-value" id="resultSalePrice">—</span>
-            <span class="result-unit">원</span>
-          </div>
-        </div>
-        <div class="result-divider"></div>
-        <div class="result-row">
-          <span class="result-label">수익률</span>
-          <div class="result-value-wrap">
-            <span class="result-value" id="resultYield">—</span>
-            <span class="result-unit">%</span>
-          </div>
-        </div>
-      </div>
 
-    </main>
+        </div>
+      </main>
+    </div>
+
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <script src="app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {

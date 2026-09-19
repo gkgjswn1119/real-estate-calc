@@ -1,4 +1,4 @@
-const CACHE = 'real-estate-calc-v1';
+const CACHE = 'real-estate-calc-v2';
 const ASSETS = [
   './',
   './index.html',

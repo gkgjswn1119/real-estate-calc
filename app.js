@@ -202,6 +202,136 @@ function setActiveBtn(mode) {
   btnYield.classList.toggle('btn-active', mode === 'yield');
 }
 
+// ── Tab switching ─────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', function () {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    const target = this.dataset.tab;
+    document.getElementById('page-calc').style.display  = target === 'calc'  ? '' : 'none';
+    document.getElementById('page-graph').style.display = target === 'graph' ? '' : 'none';
+  });
+});
+
+// ── Graph page ────────────────────────────────────────────────────────────────
+applyCommaFormat(document.getElementById('g-rpp'));
+
+const AREAS = Array.from({ length: 17 }, (_, i) => 10 + i * 5); // 10, 15, … 90
+let chartInstance = null;
+
+function calcGraph() {
+  const rppEl   = document.getElementById('g-rpp');
+  const yldEl   = document.getElementById('g-yield');
+  const errorEl = document.getElementById('g-error');
+
+  ['g-rpp', 'g-yield'].forEach(id => {
+    document.getElementById('wrap-' + id)?.classList.remove('error');
+  });
+  errorEl.textContent = '';
+
+  const rpp     = fromField(rppEl);
+  const yldRate = fromField(yldEl);
+
+  if (!rpp || rpp <= 0) {
+    errorEl.textContent = '평당 임대료를 입력해주세요.';
+    document.getElementById('wrap-g-rpp').classList.add('error');
+    return;
+  }
+  if (!yldRate || yldRate <= 0) {
+    errorEl.textContent = '수익률을 입력해주세요.';
+    document.getElementById('wrap-g-yield').classList.add('error');
+    return;
+  }
+
+  // 평당 매매가 = 평당임대료 × (1200/수익률 + 16)
+  const ppp    = rpp * (1200 / yldRate + 16);
+  const totals = AREAS.map(a => Math.round(a * ppp));
+
+  document.getElementById('g-ppp-value').textContent = toComma(Math.round(ppp));
+
+  const tbody = document.getElementById('g-table-body');
+  tbody.innerHTML = AREAS.map((a, i) =>
+    `<tr><td>${a}평</td><td>${totals[i].toLocaleString('ko-KR')}원</td></tr>`
+  ).join('');
+
+  const resultCard = document.getElementById('g-result-card');
+  resultCard.style.display = 'block';
+
+  renderChart(AREAS, totals);
+}
+
+function renderChart(areas, totals) {
+  const ctx = document.getElementById('g-chart').getContext('2d');
+  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: areas.map(a => a + '평'),
+      datasets: [{
+        data: totals,
+        borderColor: '#2563EB',
+        backgroundColor: 'rgba(37, 99, 235, 0.08)',
+        fill: true,
+        tension: 0.3,
+        pointBackgroundColor: '#2563EB',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title:  (items) => items[0].label,
+            label:  (item)  => ' 총 매매가: ' + item.parsed.y.toLocaleString('ko-KR') + ' 원',
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(0,0,0,0.04)' },
+          ticks: { font: { size: 11 }, color: '#64748B' },
+          title: {
+            display: true,
+            text: '전용면적 (평)',
+            font: { size: 11, weight: '600' },
+            color: '#64748B',
+            padding: { top: 6 },
+          }
+        },
+        y: {
+          grid: { color: 'rgba(0,0,0,0.04)' },
+          ticks: {
+            font: { size: 11 },
+            color: '#64748B',
+            callback: (v) => toEok(v),
+          },
+          title: {
+            display: true,
+            text: '총 매매가',
+            font: { size: 11, weight: '600' },
+            color: '#64748B',
+            padding: { bottom: 6 },
+          }
+        }
+      }
+    }
+  });
+}
+
+function toEok(v) {
+  if (v >= 100000000) return (v / 100000000).toFixed(1) + '억';
+  if (v >= 10000000)  return Math.round(v / 10000000) + '천만';
+  if (v >= 10000)     return Math.round(v / 10000) + '만';
+  return v.toLocaleString('ko-KR');
+}
+
 function renderResult({ pricePerPyeong, salePrice, yieldRate, mode }) {
   document.getElementById('resultPricePerPyeong').textContent = toComma(pricePerPyeong);
   document.getElementById('resultSalePrice').textContent      = toComma(salePrice);
