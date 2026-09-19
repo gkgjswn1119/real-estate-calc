@@ -1,0 +1,25 @@
+{
+  "name": "부동산 수익률 계산기",
+  "short_name": "수익률계산기",
+  "description": "부동산 임대 수익률을 빠르게 계산하는 앱",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#EFF2F7",
+  "theme_color": "#2563EB",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,0 +1,324 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --primary: #2563EB;
+  --primary-dark: #1D4ED8;
+  --bg: #EFF2F7;
+  --card-bg: #FFFFFF;
+  --text: #1E293B;
+  --text-muted: #64748B;
+  --border: #E2E8F0;
+  --error: #EF4444;
+  --hint: #10B981;
+  --radius: 14px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo',
+               'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Header ──────────────────────────────── */
+.app-header {
+  background: var(--primary);
+  color: #fff;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.35);
+}
+
+.header-icon { font-size: 22px; }
+
+.app-header h1 {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+/* ── Layout ──────────────────────────────── */
+.app-main {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 40px;
+}
+
+/* ── Cards ───────────────────────────────── */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07), 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* ── Field groups ────────────────────────── */
+.field-group {
+  margin-bottom: 14px;
+}
+
+.field-group:last-of-type {
+  margin-bottom: 0;
+}
+
+label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  background: #FAFBFC;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  overflow: hidden;
+}
+
+.input-wrapper:focus-within {
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.input-wrapper.error {
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 13px 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  text-align: right;
+  min-width: 0;
+  font-family: inherit;
+}
+
+input::placeholder {
+  color: #C8D0DA;
+  font-weight: 400;
+}
+
+.unit {
+  padding: 0 13px 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Bidirectional row ───────────────────── */
+.field-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.field-group.half {
+  flex: 1;
+  margin-bottom: 0;
+  min-width: 0;
+}
+
+.bi-icon {
+  font-size: 16px;
+  color: var(--text-muted);
+  padding-bottom: 14px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+/* ── Hints / Errors ──────────────────────── */
+.field-hint {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--hint);
+  margin-top: 5px;
+  min-height: 15px;
+  padding-left: 2px;
+}
+
+.error-message {
+  min-height: 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--error);
+  margin-top: 4px;
+  margin-bottom: 10px;
+  padding-left: 2px;
+}
+
+/* ── Buttons ─────────────────────────────── */
+.button-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 18px;
+  margin-bottom: 10px;
+}
+
+.btn {
+  padding: 14px 10px;
+  border: none;
+  border-radius: 9px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  font-family: inherit;
+  letter-spacing: -0.2px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+
+.btn-primary:active {
+  background: var(--primary-dark);
+  transform: scale(0.97);
+}
+
+.btn-primary.btn-active {
+  background: var(--primary-dark);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.btn-reset {
+  width: 100%;
+  background: #F1F5F9;
+  color: var(--text-muted);
+  border: 1.5px solid var(--border);
+}
+
+.btn-reset:active {
+  background: #E2E8F0;
+  transform: scale(0.98);
+}
+
+/* ── Result card ─────────────────────────── */
+.result-card {
+  display: none;
+  animation: slideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.result-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.result-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--primary);
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.2px;
+}
+
+.result-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 11px 0;
+}
+
+.result-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+.result-value-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+
+.result-value {
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: -0.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.result-unit {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.result-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0 -2px;
+}
+
+/* ── Responsive (wider screens) ─────────── */
+@media (min-width: 480px) {
+  .app-main {
+    padding: 20px;
+    padding-bottom: 48px;
+  }
+  .app-header {
+    padding: 20px 24px;
+  }
+  .app-header h1 {
+    font-size: 18px;
+  }
+}
