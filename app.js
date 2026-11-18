@@ -208,8 +208,10 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     this.classList.add('active');
     const target = this.dataset.tab;
-    document.getElementById('page-calc').style.display  = target === 'calc'  ? '' : 'none';
-    document.getElementById('page-graph').style.display = target === 'graph' ? '' : 'none';
+    document.getElementById('page-calc').style.display       = target === 'calc'       ? '' : 'none';
+    document.getElementById('page-graph').style.display      = target === 'graph'      ? '' : 'none';
+    document.getElementById('page-commercial').style.display = target === 'commercial' ? '' : 'none';
+    if (target === 'commercial') calcCommercial();
   });
 });
 
@@ -331,6 +333,177 @@ function toEok(v) {
   if (v >= 10000)     return Math.round(v / 10000) + '만';
   return v.toLocaleString('ko-KR');
 }
+
+// ── 상가 수익률 계산 탭 ───────────────────────────────────────────────────────
+
+const C_MONEY_IDS = [
+  'c-appraised', 'c-minimum', 'c-bid', 'c-deposit', 'c-rent',
+  'c-eviction-pp', 'c-interior-pp', 'c-mgmt-pp', 'c-unpaid-mgmt', 'c-manual-loan',
+];
+
+C_MONEY_IDS.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) applyCommaFormat(el);
+});
+
+const C_ALL_INPUT_IDS = [
+  ...C_MONEY_IDS,
+  'c-area', 'c-market-yield', 'c-first-rate', 'c-second-rate',
+  'c-manual-rate', 'c-reserve-months', 'c-custom-yield',
+];
+
+C_ALL_INPUT_IDS.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', calcCommercial);
+});
+
+document.getElementById('c-loan-type').addEventListener('change', function () {
+  updateLoanTypeUI(this.value);
+  calcCommercial();
+});
+
+function updateLoanTypeUI(type) {
+  document.getElementById('c-row-first-rate').style.display  = type === '1'      ? '' : 'none';
+  document.getElementById('c-row-second-rate').style.display = type === '2'      ? '' : 'none';
+  document.getElementById('c-row-manual-rate').style.display = type === 'manual' ? '' : 'none';
+  document.getElementById('c-row-manual-loan').style.display = type === 'manual' ? '' : 'none';
+
+  const note = document.getElementById('c-loan-note');
+  if (type === '1') {
+    note.textContent = '1금융권: MIN(입찰가×80%, 감정가×70%, 시세가치×70%, 입찰가²÷감정가)';
+  } else if (type === '2') {
+    note.textContent = '2금융권: MIN(입찰가×90%, 감정가×80%, 시세가치×80%)';
+  } else {
+    note.textContent = '직접 입력한 대출 가능액·금리를 사용합니다.';
+  }
+}
+
+function cFromId(id) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  const raw = el.value.replace(/,/g, '').trim();
+  if (raw === '') return null;
+  const n = parseFloat(raw);
+  return isNaN(n) ? null : n;
+}
+
+function cPct(id) {
+  const v = cFromId(id);
+  return v === null ? null : v / 100;
+}
+
+function cFmtMoney(v) {
+  if (v === null || v === undefined || isNaN(v)) return '-';
+  return Math.round(v).toLocaleString('ko-KR') + '원';
+}
+
+function cFmtPct(v) {
+  if (v === null || v === undefined || isNaN(v)) return '-';
+  return (v * 100).toFixed(2) + '%';
+}
+
+function calcCommercial() {
+  const appraised   = cFromId('c-appraised') ?? 0;
+  const minimum     = cFromId('c-minimum') ?? 0;
+  const area        = cFromId('c-area') ?? 0;
+  const bidPrice    = cFromId('c-bid') ?? 0;
+  const deposit     = cFromId('c-deposit') ?? 0;
+  const monthlyRent = cFromId('c-rent') ?? 0;
+  const marketYield = cPct('c-market-yield') ?? 0.06;
+  const firstRate   = cPct('c-first-rate') ?? 0.045;
+  const secondRate  = cPct('c-second-rate') ?? 0.05;
+  const manualRate  = cPct('c-manual-rate') ?? 0.05;
+  const manualLoan  = cFromId('c-manual-loan') ?? 0;
+  const evictionPP  = cFromId('c-eviction-pp') ?? 100000;
+  const interiorPP  = cFromId('c-interior-pp') ?? 800000;
+  const mgmtPP      = cFromId('c-mgmt-pp') ?? 0;
+  const unpaidMgmt  = cFromId('c-unpaid-mgmt') ?? 0;
+  const reserveMo   = cFromId('c-reserve-months') ?? 10;
+  const customYield = cPct('c-custom-yield') ?? 0.06;
+  const loanType    = document.getElementById('c-loan-type').value;
+
+  const fairValue       = marketYield > 0 ? (monthlyRent * 12) / marketYield + deposit : 0;
+  const acquisitionCost = bidPrice * 0.05;
+
+  let loan = 0;
+  if (loanType === 'manual') {
+    loan = manualLoan;
+  } else if (bidPrice > 0) {
+    if (loanType === '1') {
+      const c = [bidPrice * 0.8];
+      if (appraised > 0) { c.push(appraised * 0.7); c.push((bidPrice * bidPrice) / appraised); }
+      if (fairValue  > 0) c.push(fairValue * 0.7);
+      loan = Math.min(...c);
+    } else {
+      const c = [bidPrice * 0.9];
+      if (appraised > 0) c.push(appraised * 0.8);
+      if (fairValue  > 0) c.push(fairValue * 0.8);
+      loan = Math.min(...c);
+    }
+  }
+  if (!isFinite(loan) || loan < 0) loan = 0;
+
+  const rate            = loanType === 'manual' ? manualRate : loanType === '1' ? firstRate : secondRate;
+  const annualInterest  = loan * rate;
+  const eviction        = evictionPP * area;
+  const interior        = interiorPP * area;
+  const monthlyMgmt     = mgmtPP * area;
+  const reserve         = (annualInterest / 12 + monthlyMgmt) * reserveMo;
+  const cashIn          = bidPrice + acquisitionCost - loan + eviction + interior + unpaidMgmt + reserve - deposit;
+  const monthlyCashflow = monthlyRent - annualInterest / 12;
+  const propertyYield   = bidPrice > deposit ? (monthlyRent * 12) / (bidPrice - deposit) : null;
+  const roe             = cashIn !== 0 ? (monthlyCashflow * 12) / cashIn : null;
+  const saleProfit      = fairValue - cashIn - deposit - loan;
+  const bidToMinimum    = minimum > 0 ? bidPrice / minimum - 1 : null;
+  const rentPerPyeong   = area > 0 ? monthlyRent / area : null;
+  const customYieldVal  = customYield > 0 ? (monthlyRent * 12) / customYield + deposit : null;
+  const bidRate         = appraised > 0 ? bidPrice / appraised : null;
+
+  document.getElementById('c-cash-in').textContent          = cFmtMoney(cashIn);
+  document.getElementById('c-monthly-cashflow').textContent = cFmtMoney(monthlyCashflow);
+
+  const roeEl = document.getElementById('c-roe');
+  roeEl.textContent = roe !== null ? cFmtPct(roe) : '-';
+  roeEl.className   = 'c-hero-value' + (roe === null ? '' : roe >= 0 ? ' c-pos' : ' c-neg');
+
+  document.getElementById('c-sale-profit').textContent    = cFmtMoney(saleProfit);
+  document.getElementById('c-acquisition').textContent    = cFmtMoney(acquisitionCost);
+  document.getElementById('c-eviction').textContent       = cFmtMoney(eviction);
+  document.getElementById('c-interior').textContent       = cFmtMoney(interior);
+  document.getElementById('c-unpaid-cost').textContent    = cFmtMoney(unpaidMgmt);
+  document.getElementById('c-reserve').textContent        = cFmtMoney(reserve);
+  document.getElementById('c-annual-interest').textContent = cFmtMoney(annualInterest);
+  document.getElementById('c-fair-value').textContent     = cFmtMoney(fairValue);
+  document.getElementById('c-loan-amount').textContent    = cFmtMoney(loan);
+  document.getElementById('c-loan-rate').textContent      = cFmtPct(rate);
+  document.getElementById('c-prop-yield').textContent     = cFmtPct(propertyYield);
+  document.getElementById('c-rent-pp').textContent        = rentPerPyeong !== null ? cFmtMoney(rentPerPyeong) : '-';
+  document.getElementById('c-bid-rate').textContent       = bidRate !== null ? cFmtPct(bidRate) : '-';
+  document.getElementById('c-min-gap').textContent        = bidToMinimum !== null ? cFmtPct(bidToMinimum) : '-';
+  document.getElementById('c-custom-yield-value').textContent = customYieldVal !== null ? cFmtMoney(customYieldVal) : '-';
+}
+
+function resetCommercial() {
+  ['c-appraised', 'c-minimum', 'c-bid', 'c-deposit', 'c-rent', 'c-manual-loan'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('c-area').value           = '';
+  document.getElementById('c-market-yield').value   = '6';
+  document.getElementById('c-first-rate').value     = '4.5';
+  document.getElementById('c-second-rate').value    = '5';
+  document.getElementById('c-manual-rate').value    = '5';
+  document.getElementById('c-eviction-pp').value    = '100,000';
+  document.getElementById('c-interior-pp').value    = '800,000';
+  document.getElementById('c-mgmt-pp').value        = '0';
+  document.getElementById('c-unpaid-mgmt').value    = '0';
+  document.getElementById('c-reserve-months').value = '10';
+  document.getElementById('c-custom-yield').value   = '6';
+  document.getElementById('c-loan-type').value      = '2';
+  updateLoanTypeUI('2');
+  calcCommercial();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 function renderResult({ pricePerPyeong, salePrice, yieldRate, mode }) {
   document.getElementById('resultPricePerPyeong').textContent = toComma(pricePerPyeong);

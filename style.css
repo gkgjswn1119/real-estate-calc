@@ -336,11 +336,11 @@ input::placeholder {
 
 .tab {
   flex: 1;
-  padding: 13px 10px;
+  padding: 11px 8px;
   border: none;
   background: transparent;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;
@@ -349,6 +349,10 @@ input::placeholder {
   transition: color 0.15s, border-color 0.15s;
   -webkit-tap-highlight-color: transparent;
   letter-spacing: -0.2px;
+  white-space: normal;
+  word-break: keep-all;
+  line-height: 1.25;
+  text-align: center;
 }
 
 .tab.active {
@@ -467,4 +471,183 @@ input::placeholder {
 
 .g-result-card {
   animation: slideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── 상가 수익률 계산 탭 ───────────────────────────── */
+
+/* 입력 카드 내 섹션 제목 */
+.c-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin: 20px 0 12px;
+}
+
+.c-section-title:first-child {
+  margin-top: 0;
+}
+
+/* 대출 방식 select */
+.c-select-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  background: #FAFBFC;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.c-select-wrapper:focus-within {
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.c-select-wrapper select {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 13px 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* 대출 산식 안내 */
+.c-loan-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  padding: 8px 10px;
+  background: #F8FAFC;
+  border-radius: 7px;
+  margin: 6px 0 14px;
+}
+
+/* RESET 버튼 간격 */
+.c-reset-btn {
+  margin-top: 18px;
+}
+
+/* 결과 카드 */
+.c-result-card {
+  animation: slideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.c-result-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
+}
+
+/* 핵심 결과 2×2 그리드 */
+.c-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.c-hero-item {
+  background: #F8FAFC;
+  border-radius: 10px;
+  padding: 14px 12px;
+}
+
+.c-hero-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.c-hero-value {
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: -0.4px;
+  word-break: break-all;
+}
+
+.c-hero-value.c-pos { color: #059669; }
+.c-hero-value.c-neg { color: var(--error); }
+
+/* 구분선 */
+.c-section-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 16px -20px;
+}
+
+/* 소제목 */
+.c-sub-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 4px;
+}
+
+/* 세부 지표 행 */
+.c-metric-grid {
+  margin-top: 8px;
+}
+
+.c-metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  gap: 8px;
+}
+
+.c-metric-row:last-child {
+  border-bottom: none;
+}
+
+.c-metric-row span {
+  color: var(--text-muted);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.c-metric-row strong {
+  font-weight: 700;
+  color: var(--text);
+  text-align: right;
+}
+
+/* 수익률별 적정가치 */
+.c-custom-yield-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.c-custom-yield-field {
+  flex: 1;
+  margin-bottom: 0 !important;
+  min-width: 0;
+}
+
+.c-custom-yield-out {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 2px;
 }

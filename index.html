@@ -23,6 +23,7 @@
     <nav class="tab-bar">
       <button class="tab active" data-tab="calc">수익률 계산기</button>
       <button class="tab" data-tab="graph">면적별 분석</button>
+      <button class="tab" data-tab="commercial">상가 수익률 계산</button>
     </nav>
 
     <!-- ── 페이지 1: 수익률 계산기 ── -->
@@ -181,6 +182,239 @@
           <p class="g-chart-label">전용면적별 총 매매가 추이</p>
           <div class="g-chart-wrap">
             <canvas id="g-chart"></canvas>
+          </div>
+
+        </div>
+      </main>
+    </div>
+
+  </div>
+
+    <!-- ── 페이지 3: 상가 수익률 계산 ── -->
+    <div id="page-commercial" class="page" style="display:none">
+      <main class="app-main">
+
+        <!-- 입력 카드 -->
+        <div class="card input-card">
+
+          <div class="c-section-title">물건 기준</div>
+
+          <div class="field-group">
+            <label for="c-appraised">감정가</label>
+            <div class="input-wrapper" id="wrap-c-appraised">
+              <input type="text" id="c-appraised" inputmode="numeric" placeholder="0" autocomplete="off">
+              <span class="unit">원</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="c-minimum">최저가</label>
+            <div class="input-wrapper" id="wrap-c-minimum">
+              <input type="text" id="c-minimum" inputmode="numeric" placeholder="0" autocomplete="off">
+              <span class="unit">원</span>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group half">
+              <label for="c-bid">입찰가</label>
+              <div class="input-wrapper" id="wrap-c-bid">
+                <input type="text" id="c-bid" inputmode="numeric" placeholder="0" autocomplete="off">
+                <span class="unit">원</span>
+              </div>
+            </div>
+            <div class="field-group half">
+              <label for="c-area">평수</label>
+              <div class="input-wrapper" id="wrap-c-area">
+                <input type="text" id="c-area" inputmode="decimal" placeholder="0" autocomplete="off">
+                <span class="unit">평</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="c-section-title">임대 / 가치</div>
+
+          <div class="field-row">
+            <div class="field-group half">
+              <label for="c-deposit">보증금</label>
+              <div class="input-wrapper" id="wrap-c-deposit">
+                <input type="text" id="c-deposit" inputmode="numeric" placeholder="0" autocomplete="off">
+                <span class="unit">원</span>
+              </div>
+            </div>
+            <div class="field-group half">
+              <label for="c-rent">월세</label>
+              <div class="input-wrapper" id="wrap-c-rent">
+                <input type="text" id="c-rent" inputmode="numeric" placeholder="0" autocomplete="off">
+                <span class="unit">원</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="c-market-yield">시세 매매수익률</label>
+            <div class="input-wrapper" id="wrap-c-market-yield">
+              <input type="text" id="c-market-yield" inputmode="decimal" placeholder="6" value="6" autocomplete="off">
+              <span class="unit">%</span>
+            </div>
+          </div>
+
+          <div class="c-section-title">대출</div>
+
+          <div class="field-group">
+            <label for="c-loan-type">대출 방식</label>
+            <div class="c-select-wrapper">
+              <select id="c-loan-type">
+                <option value="1">1금융권</option>
+                <option value="2" selected>2금융권</option>
+                <option value="manual">직접입력</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group" id="c-row-first-rate" style="display:none">
+            <label for="c-first-rate">1금융권 금리</label>
+            <div class="input-wrapper" id="wrap-c-first-rate">
+              <input type="text" id="c-first-rate" inputmode="decimal" placeholder="4.5" value="4.5" autocomplete="off">
+              <span class="unit">%</span>
+            </div>
+          </div>
+
+          <div class="field-group" id="c-row-second-rate">
+            <label for="c-second-rate">2금융권 금리</label>
+            <div class="input-wrapper" id="wrap-c-second-rate">
+              <input type="text" id="c-second-rate" inputmode="decimal" placeholder="5" value="5" autocomplete="off">
+              <span class="unit">%</span>
+            </div>
+          </div>
+
+          <div class="field-group" id="c-row-manual-rate" style="display:none">
+            <label for="c-manual-rate">대출 금리</label>
+            <div class="input-wrapper" id="wrap-c-manual-rate">
+              <input type="text" id="c-manual-rate" inputmode="decimal" placeholder="5" value="5" autocomplete="off">
+              <span class="unit">%</span>
+            </div>
+          </div>
+
+          <div class="field-group" id="c-row-manual-loan" style="display:none">
+            <label for="c-manual-loan">대출 가능액</label>
+            <div class="input-wrapper" id="wrap-c-manual-loan">
+              <input type="text" id="c-manual-loan" inputmode="numeric" placeholder="0" autocomplete="off">
+              <span class="unit">원</span>
+            </div>
+          </div>
+
+          <div class="c-loan-note" id="c-loan-note">
+            2금융권: MIN(입찰가×90%, 감정가×80%, 시세가치×80%)
+          </div>
+
+          <div class="c-section-title">추가 비용</div>
+
+          <div class="field-row">
+            <div class="field-group half">
+              <label for="c-eviction-pp">명도비/평</label>
+              <div class="input-wrapper" id="wrap-c-eviction-pp">
+                <input type="text" id="c-eviction-pp" inputmode="numeric" placeholder="100,000" value="100,000" autocomplete="off">
+                <span class="unit">원</span>
+              </div>
+            </div>
+            <div class="field-group half">
+              <label for="c-interior-pp">인테리어비/평</label>
+              <div class="input-wrapper" id="wrap-c-interior-pp">
+                <input type="text" id="c-interior-pp" inputmode="numeric" placeholder="800,000" value="800,000" autocomplete="off">
+                <span class="unit">원</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group half">
+              <label for="c-mgmt-pp">평당 관리비</label>
+              <div class="input-wrapper" id="wrap-c-mgmt-pp">
+                <input type="text" id="c-mgmt-pp" inputmode="numeric" placeholder="0" value="0" autocomplete="off">
+                <span class="unit">원</span>
+              </div>
+            </div>
+            <div class="field-group half">
+              <label for="c-unpaid-mgmt">미납관리비</label>
+              <div class="input-wrapper" id="wrap-c-unpaid-mgmt">
+                <input type="text" id="c-unpaid-mgmt" inputmode="numeric" placeholder="0" value="0" autocomplete="off">
+                <span class="unit">원</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="c-reserve-months">예비비 개월 수</label>
+            <div class="input-wrapper" id="wrap-c-reserve-months">
+              <input type="text" id="c-reserve-months" inputmode="numeric" placeholder="10" value="10" autocomplete="off">
+              <span class="unit">개월</span>
+            </div>
+          </div>
+
+          <button class="btn btn-reset c-reset-btn" onclick="resetCommercial()">RESET</button>
+        </div>
+
+        <!-- 결과 카드 -->
+        <div class="card c-result-card">
+
+          <div class="c-result-title">📊 핵심 결과</div>
+          <div class="c-hero-grid">
+            <div class="c-hero-item">
+              <span class="c-hero-label">실투입금</span>
+              <strong class="c-hero-value" id="c-cash-in">-</strong>
+            </div>
+            <div class="c-hero-item">
+              <span class="c-hero-label">월 현금흐름</span>
+              <strong class="c-hero-value" id="c-monthly-cashflow">-</strong>
+            </div>
+            <div class="c-hero-item">
+              <span class="c-hero-label">ROE</span>
+              <strong class="c-hero-value" id="c-roe">-</strong>
+            </div>
+            <div class="c-hero-item">
+              <span class="c-hero-label">매도수익</span>
+              <strong class="c-hero-value" id="c-sale-profit">-</strong>
+            </div>
+          </div>
+
+          <div class="c-section-divider"></div>
+          <div class="c-sub-title">비용 산출</div>
+          <div class="c-metric-grid">
+            <div class="c-metric-row"><span>취득비 (입찰가×5%)</span><strong id="c-acquisition">-</strong></div>
+            <div class="c-metric-row"><span>명도비</span><strong id="c-eviction">-</strong></div>
+            <div class="c-metric-row"><span>인테리어비</span><strong id="c-interior">-</strong></div>
+            <div class="c-metric-row"><span>미납관리비</span><strong id="c-unpaid-cost">-</strong></div>
+            <div class="c-metric-row"><span>예비비</span><strong id="c-reserve">-</strong></div>
+            <div class="c-metric-row"><span>연 이자</span><strong id="c-annual-interest">-</strong></div>
+          </div>
+
+          <div class="c-section-divider"></div>
+          <div class="c-sub-title">가치 / 매도 시뮬레이션</div>
+          <div class="c-metric-grid">
+            <div class="c-metric-row"><span>시세가치</span><strong id="c-fair-value">-</strong></div>
+            <div class="c-metric-row"><span>대출 가능액</span><strong id="c-loan-amount">-</strong></div>
+            <div class="c-metric-row"><span>대출금리</span><strong id="c-loan-rate">-</strong></div>
+            <div class="c-metric-row"><span>매매수익률</span><strong id="c-prop-yield">-</strong></div>
+            <div class="c-metric-row"><span>평당 월세</span><strong id="c-rent-pp">-</strong></div>
+            <div class="c-metric-row"><span>입찰가/감정가</span><strong id="c-bid-rate">-</strong></div>
+            <div class="c-metric-row"><span>최저가 대비</span><strong id="c-min-gap">-</strong></div>
+          </div>
+
+          <div class="c-section-divider"></div>
+          <div class="c-sub-title">수익률별 적정가치</div>
+          <div class="c-custom-yield-row">
+            <div class="field-group c-custom-yield-field">
+              <label for="c-custom-yield">매매수익률</label>
+              <div class="input-wrapper">
+                <input type="text" id="c-custom-yield" inputmode="decimal" placeholder="6" value="6" autocomplete="off">
+                <span class="unit">%</span>
+              </div>
+            </div>
+            <div class="c-custom-yield-out">
+              <span class="c-hero-label">적정가치</span>
+              <strong class="c-hero-value" id="c-custom-yield-value">-</strong>
+            </div>
           </div>
 
         </div>
