@@ -521,13 +521,20 @@
                 </div>
               </div>
               <div class="field-group">
+                <label for="s-extra">추가 지출</label>
+                <div class="input-wrapper" id="wrap-s-extra">
+                  <input type="text" id="s-extra" inputmode="numeric" placeholder="0" autocomplete="off">
+                  <span class="unit">원</span>
+                </div>
+              </div>
+              <div class="field-group">
                 <label for="s-appraised">감정가</label>
                 <div class="input-wrapper" id="wrap-s-appraised">
                   <input type="text" id="s-appraised" inputmode="numeric" placeholder="0" autocomplete="off">
                   <span class="unit">원</span>
                 </div>
               </div>
-              <div class="s-hint">감정가는 참고용 — 계산에 반영되지 않습니다.</div>
+              <div class="s-hint">추가 지출은 <b>취득시점 필요</b>에 더해집니다. 감정가는 대출 한도 산출에 사용됩니다.</div>
             </div>
             <div class="s-col-out">
               <div class="s-col-label">결과</div>
@@ -550,23 +557,49 @@
             <div class="s-col-in">
               <div class="s-col-label">입력</div>
               <div class="field-group">
-                <label for="s-loan">대출</label>
-                <div class="input-wrapper" id="wrap-s-loan">
-                  <input type="text" id="s-loan" inputmode="numeric" placeholder="0" autocomplete="off">
-                  <span class="unit">원</span>
+                <label for="s-loan-type">대출 방식</label>
+                <div class="c-select-wrapper">
+                  <select id="s-loan-type">
+                    <option value="1">1금융권</option>
+                    <option value="2" selected>2금융권</option>
+                    <option value="manual">직접입력</option>
+                  </select>
                 </div>
               </div>
-              <div class="field-group">
-                <label for="s-loan-rate">금리</label>
-                <div class="input-wrapper" id="wrap-s-loan-rate">
-                  <input type="text" id="s-loan-rate" inputmode="decimal" placeholder="6" autocomplete="off">
+              <div class="field-group" id="s-row-first-rate" style="display:none">
+                <label for="s-first-rate">1금융권 금리</label>
+                <div class="input-wrapper" id="wrap-s-first-rate">
+                  <input type="text" id="s-first-rate" inputmode="decimal" placeholder="4.5" value="4.5" autocomplete="off">
                   <span class="unit">%</span>
                 </div>
               </div>
-              <div class="s-hint">원금 상환은 가정하지 않습니다.</div>
+              <div class="field-group" id="s-row-second-rate">
+                <label for="s-second-rate">2금융권 금리</label>
+                <div class="input-wrapper" id="wrap-s-second-rate">
+                  <input type="text" id="s-second-rate" inputmode="decimal" placeholder="5" value="5" autocomplete="off">
+                  <span class="unit">%</span>
+                </div>
+              </div>
+              <div class="field-group" id="s-row-manual-rate" style="display:none">
+                <label for="s-manual-rate">대출 금리</label>
+                <div class="input-wrapper" id="wrap-s-manual-rate">
+                  <input type="text" id="s-manual-rate" inputmode="decimal" placeholder="5" value="5" autocomplete="off">
+                  <span class="unit">%</span>
+                </div>
+              </div>
+              <div class="field-group" id="s-row-manual-loan" style="display:none">
+                <label for="s-manual-loan">대출 가능액</label>
+                <div class="input-wrapper" id="wrap-s-manual-loan">
+                  <input type="text" id="s-manual-loan" inputmode="numeric" placeholder="0" autocomplete="off">
+                  <span class="unit">원</span>
+                </div>
+              </div>
+              <div class="s-hint" id="s-loan-note">2금융권: MIN(낙찰가×90%, 감정가×80%, 시세가치×80%)</div>
+              <div class="s-hint">시세가치 = 매도가(연 임대료 ÷ 매매수익률 + 보증금). 원금 상환은 가정하지 않습니다.</div>
             </div>
             <div class="s-col-out">
               <div class="s-col-label">결과</div>
+              <div class="s-out-row"><span>대출</span><strong id="s-loan-amount">-</strong></div>
               <div class="s-out-row"><span>연이자</span><strong id="s-annual-int">-</strong></div>
               <div class="s-out-row"><span>월이자</span><strong id="s-monthly-int">-</strong></div>
             </div>

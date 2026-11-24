@@ -510,8 +510,8 @@ function resetCommercial() {
 // 엑셀 셀 번호를 주석으로 병기한다. 로직은 원본과 100% 동일.
 
 const S_MONEY_IDS = [
-  's-appraised', 's-bid', 's-evict-pp', 's-demo-pp', 's-loan',
-  's-mgmt-pp', 's-unpaid', 's-deposit', 's-rent',
+  's-appraised', 's-bid', 's-evict-pp', 's-demo-pp', 's-extra',
+  's-mgmt-pp', 's-unpaid', 's-deposit', 's-rent', 's-manual-loan',
 ];
 
 S_MONEY_IDS.forEach(id => {
@@ -519,24 +519,71 @@ S_MONEY_IDS.forEach(id => {
   if (el) applyCommaFormat(el);
 });
 
+// 대출 방식 UI 토글 (기존 상가 탭의 updateLoanTypeUI와 동일 패턴, s- 접두사)
+function updateAuctionLoanUI(type) {
+  document.getElementById('s-row-first-rate').style.display  = type === '1'      ? '' : 'none';
+  document.getElementById('s-row-second-rate').style.display = type === '2'      ? '' : 'none';
+  document.getElementById('s-row-manual-rate').style.display = type === 'manual' ? '' : 'none';
+  document.getElementById('s-row-manual-loan').style.display = type === 'manual' ? '' : 'none';
+
+  const note = document.getElementById('s-loan-note');
+  if (type === '1') {
+    note.textContent = '1금융권: MIN(낙찰가×80%, 감정가×70%, 시세가치×70%, 낙찰가²÷감정가)';
+  } else if (type === '2') {
+    note.textContent = '2금융권: MIN(낙찰가×90%, 감정가×80%, 시세가치×80%)';
+  } else {
+    note.textContent = '직접 입력한 대출 가능액·금리를 사용합니다.';
+  }
+}
+
 function calcAuction() {
-  // ── 입력 (엑셀 Bold 셀 16개) — 공란은 0으로 취급
+  // ── 입력 — 공란은 0으로 취급
   const area       = cFromId('s-area')       ?? 0;  // F1  평수
-  /* 감정가(B1)는 어떤 수식에도 참조되지 않는다 — 참고 표시용 */
   const bid        = cFromId('s-bid')        ?? 0;  // B2  낙찰가
   const acqRate    = cPct('s-acq-rate')      ?? 0;  // D3  취득비율
   const evictPP    = cFromId('s-evict-pp')   ?? 0;  // B4  평당명도비
   const demoPP     = cFromId('s-demo-pp')    ?? 0;  // B6  평당철거비
-  const loan       = cFromId('s-loan')       ?? 0;  // B8  대출
-  const loanRate   = cPct('s-loan-rate')     ?? 0;  // D9  금리
-  const mgmtPP     = cFromId('s-mgmt-pp')    ?? 0;  // B11 평당관리비
   const unpaid     = cFromId('s-unpaid')     ?? 0;  // B13 미납관리비
+  const extra      = cFromId('s-extra')      ?? 0;  // 추가지출 — 취득시점 필요에 가산(최종수익까지 반영)
+  const appraised  = cFromId('s-appraised')  ?? 0;  // 감정가 — 대출 한도 산출에 사용
+  const mgmtPP     = cFromId('s-mgmt-pp')    ?? 0;  // B11 평당관리비
+  const vacancyMo  = cFromId('s-vacancy-mo') ?? 0;  // F2  공실개월수
   const deposit    = cFromId('s-deposit')    ?? 0;  // B14 보증금
   const rent       = cFromId('s-rent')       ?? 0;  // B15 임대료
+  const holdMo     = cFromId('s-hold-mo')    ?? 0;  // F3  임차후매도까지개월수
   const saleYield  = cPct('s-sale-yield')    ?? 0;  // D18 매매수익률
   const taxRate    = cPct('s-tax-rate')      ?? 0;  // D20 양도세율
-  const vacancyMo  = cFromId('s-vacancy-mo') ?? 0;  // F2  공실개월수
-  const holdMo     = cFromId('s-hold-mo')    ?? 0;  // F3  임차후매도까지개월수
+
+  // B18 =((B15*12)/D18)+B14 — 원본은 D18=0일 때 #DIV/0!. 여기선 '-' 처리.
+  // 이 매도가(=시세가치)를 대출 한도 산출에 재사용한다.
+  const salePrice     = saleYield > 0 ? (rent * 12) / saleYield + deposit : null;
+
+  // ── 대출 (기존 상가 탭의 산출식과 동일) ───────────────────────────
+  const loanType   = document.getElementById('s-loan-type').value;
+  const firstRate  = cPct('s-first-rate')   ?? 0.045;
+  const secondRate = cPct('s-second-rate')  ?? 0.05;
+  const manualRate = cPct('s-manual-rate')  ?? 0.05;
+  const manualLoan = cFromId('s-manual-loan') ?? 0;
+  const fairValue  = salePrice === null ? 0 : salePrice;   // 시세가치 = 매도가
+
+  let loan = 0;
+  if (loanType === 'manual') {
+    loan = manualLoan;
+  } else if (bid > 0) {
+    if (loanType === '1') {
+      const c = [bid * 0.8];
+      if (appraised > 0) { c.push(appraised * 0.7); c.push((bid * bid) / appraised); }
+      if (fairValue  > 0) c.push(fairValue * 0.7);
+      loan = Math.min(...c);
+    } else {
+      const c = [bid * 0.9];
+      if (appraised > 0) c.push(appraised * 0.8);
+      if (fairValue  > 0) c.push(fairValue * 0.8);
+      loan = Math.min(...c);
+    }
+  }
+  if (!isFinite(loan) || loan < 0) loan = 0;
+  const loanRate = loanType === 'manual' ? manualRate : loanType === '1' ? firstRate : secondRate;
 
   // ── 수식 (엑셀과 1:1)
   const acqCost       = bid * acqRate;                   // B3  =B2*D3
@@ -548,16 +595,14 @@ function calcAuction() {
   const monthlyOut    = monthlyInt + monthlyMgmt;        // B16 =B10+B12
   const vacancyCost   = monthlyOut * vacancyMo;          // B17 =B16*F2
 
-  // B18 =((B15*12)/D18)+B14 — 원본은 D18=0일 때 #DIV/0!. 여기선 '-' 처리.
-  const salePrice     = saleYield > 0 ? (rent * 12) / saleYield + deposit : null;
-
   const monthlyIncome = rent - monthlyInt;               // B19 =B15-B10 (관리비 미차감)
 
   // B20 =(B18-(B2+B3))*D20 — 취득원가는 낙찰가+취득비만
   const tax           = salePrice === null ? null : (salePrice - (bid + acqCost)) * taxRate;
 
-  const needAcq       = bid - loan + acqCost + evict + demo + unpaid;                // B21
-  const needVacancy   = bid - loan + acqCost + evict + demo + unpaid + vacancyCost;  // B22 (항목 재나열)
+  // 추가지출(extra)은 취득시점·공실기간 필요에 모두 가산 → 임대계약 후 필요·최종수익까지 반영
+  const needAcq       = bid - loan + acqCost + evict + demo + unpaid + extra;                // B21(+추가지출)
+  const needVacancy   = bid - loan + acqCost + evict + demo + unpaid + extra + vacancyCost;  // B22(+추가지출)
   const needLease     = needVacancy - deposit;           // B23 =B22-B14
   const holdIncome    = monthlyIncome * holdMo;          // B24 =B19*F3
 
@@ -590,6 +635,7 @@ function calcAuction() {
   sSet('s-acq-cost',     acqCost);
   sSet('s-evict',        evict);
   sSet('s-demo',         demo);
+  document.getElementById('s-loan-amount').textContent = cFmtMoney(loan);
   sSet('s-annual-int',   annualInt);
   sSet('s-monthly-int',  monthlyInt);
   sSet('s-monthly-mgmt', monthlyMgmt);
@@ -607,13 +653,25 @@ function calcAuction() {
 }
 
 function resetAuction() {
-  // 기본값 없음 — 원본 엑셀의 숫자는 예시값이므로 전부 공란으로 되돌린다.
+  // 물건 예시값은 전부 공란. 단, 대출 방식·금리는 기본값(상가 탭과 동일) 복원.
   document.querySelectorAll('#page-auction input').forEach(el => { el.value = ''; });
+  document.getElementById('s-first-rate').value  = '4.5';
+  document.getElementById('s-second-rate').value = '5';
+  document.getElementById('s-manual-rate').value = '5';
+  document.getElementById('s-loan-type').value   = '2';
+  updateAuctionLoanUI('2');
   calcAuction();
 }
 
 document.querySelectorAll('#page-auction input')
   .forEach(el => el.addEventListener('input', calcAuction));
+
+document.getElementById('s-loan-type').addEventListener('change', function () {
+  updateAuctionLoanUI(this.value);
+  calcAuction();
+});
+
+updateAuctionLoanUI('2');
 
 // ─────────────────────────────────────────────────────────────────────────────
 
