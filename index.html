@@ -24,6 +24,7 @@
       <button class="tab active" data-tab="calc">수익률 계산기</button>
       <button class="tab" data-tab="graph">면적별 분석</button>
       <button class="tab" data-tab="commercial">상가 수익률 계산</button>
+      <button class="tab" data-tab="auction">경매 시나리오</button>
     </nav>
 
     <!-- ── 페이지 1: 수익률 계산기 ── -->
@@ -418,6 +419,275 @@
           </div>
 
         </div>
+      </main>
+    </div>
+
+    <!-- ── 페이지 4: 경매 시나리오 ── -->
+    <div id="page-auction" class="page" style="display:none">
+      <main class="app-main">
+
+        <!-- 결론 -->
+        <div class="card s-hero-card">
+          <div class="s-hero-main">
+            <span class="s-hero-label">최종수익</span>
+            <strong class="s-hero-big" id="s-final-profit">-</strong>
+            <div class="s-hero-formula">매도시점 수익 − 공실기간 총투입 + 임대 후 수익</div>
+          </div>
+          <div class="s-hero-aside">
+            <span class="s-hero-label">매도가</span>
+            <strong class="s-hero-sub" id="s-sale-price">-</strong>
+          </div>
+        </div>
+
+        <!-- 필요 현금 타임라인 -->
+        <div class="card s-timeline-card">
+          <div class="s-card-title">필요 현금 타임라인</div>
+          <div class="s-timeline">
+            <div class="s-tl-item">
+              <span class="s-tl-label">취득 시점</span>
+              <strong class="s-tl-value" id="s-need-acq">-</strong>
+            </div>
+            <div class="s-tl-arrow">›</div>
+            <div class="s-tl-item">
+              <span class="s-tl-label">공실 기간</span>
+              <strong class="s-tl-value" id="s-need-vacancy">-</strong>
+            </div>
+            <div class="s-tl-arrow">›</div>
+            <div class="s-tl-item">
+              <span class="s-tl-label">임대 계약 후</span>
+              <strong class="s-tl-value" id="s-need-lease">-</strong>
+            </div>
+          </div>
+          <div class="s-note">임대 계약 후에는 보증금을 받아 그만큼 투입금이 회수됩니다.</div>
+        </div>
+
+        <!-- 공통 계수 -->
+        <div class="card s-common-card">
+          <div class="s-common-row">
+            <div class="field-group s-common-field">
+              <label for="s-area">평수</label>
+              <div class="input-wrapper" id="wrap-s-area">
+                <input type="text" id="s-area" inputmode="decimal" placeholder="0" autocomplete="off">
+                <span class="unit">평</span>
+              </div>
+            </div>
+            <div class="s-common-note">아래 <b>평당 단가 3개</b>(명도비·철거비·관리비)에 모두 곱해지는 공통 값입니다.</div>
+          </div>
+        </div>
+
+        <!-- ① 취득 -->
+        <div class="card s-stage-card">
+          <div class="s-stage-head">
+            <span class="s-stage-no s-no-1">1</span>
+            <span class="s-stage-title">취득</span>
+            <span class="s-stage-sub">낙찰 잔금 시점</span>
+          </div>
+          <div class="s-stage-body">
+            <div class="s-col-in">
+              <div class="s-col-label">입력</div>
+              <div class="field-group">
+                <label for="s-bid">낙찰가</label>
+                <div class="input-wrapper" id="wrap-s-bid">
+                  <input type="text" id="s-bid" inputmode="numeric" placeholder="0" autocomplete="off">
+                  <span class="unit">원</span>
+                </div>
+              </div>
+              <div class="field-group">
+                <label for="s-acq-rate">취득비율</label>
+                <div class="input-wrapper" id="wrap-s-acq-rate">
+                  <input type="text" id="s-acq-rate" inputmode="decimal" placeholder="5" autocomplete="off">
+                  <span class="unit">%</span>
+                </div>
+              </div>
+              <div class="field-group">
+                <label for="s-evict-pp">평당 명도비</label>
+                <div class="input-wrapper" id="wrap-s-evict-pp">
+                  <input type="text" id="s-evict-pp" inputmode="numeric" placeholder="0" autocomplete="off">
+                  <span class="unit">원</span>
+                </div>
+              </div>
+              <div class="field-group">
+                <label for="s-demo-pp">평당 철거비</label>
+                <div class="input-wrapper" id="wrap-s-demo-pp">
+                  <input type="text" id="s-demo-pp" inputmode="numeric" placeholder="0" autocomplete="off">
+                  <span class="unit">원</span>
+                </div>
+              </div>
+              <div class="field-group">
+                <label for="s-unpaid">미납 관리비</label>
+                <div class="input-wrapper" id="wrap-s-unpaid">
+                  <input type="text" id="s-unpaid" inputmode="numeric" placeholder="0" autocomplete="off">
+                  <span class="unit">원</span>
+                </div>
+              </div>
+              <div class="field-group">
+                <label for="s-appraised">감정가</label>
+                <div class="input-wrapper" id="wrap-s-appraised">
+                  <input type="text" id="s-appraised" inputmode="numeric" placeholder="0" autocomplete="off">
+                  <span class="unit">원</span>
+                </div>
+              </div>
+              <div class="s-hint">감정가는 참고용 — 계산에 반영되지 않습니다.</div>
+            </div>
+            <div class="s-col-out">
+              <div class="s-col-label">결과</div>
+              <div class="s-out-row"><span>취득비</span><strong id="s-acq-cost">-</strong></div>
+              <div class="s-out-row"><span>명도비</span><strong id="s-evict">-</strong></div>
+              <div class="s-out-row"><span>철거비</span><strong id="s-demo">-</strong></div>
+              <div class="s-out-row s-out-total"><span>취득시점 필요</span><strong id="s-need-acq-2">-</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ② 금융 -->
+        <div class="card s-stage-card">
+          <div class="s-stage-head">
+            <span class="s-stage-no s-no-2">2</span>
+            <span class="s-stage-title">금융</span>
+            <span class="s-stage-sub">이자 거치식</span>
+          </div>
+          <div class="s-stage-body">
+            <div class="s-col-in">
+              <div class="s-col-label">입력</div>
+              <div class="field-group">
+                <label for="s-loan">대출</label>
+                <div class="input-wrapper" id="wrap-s-loan">
+                  <input type="text" id="s-loan" inputmode="numeric" placeholder="0" autocomplete="off">
+                  <span class="unit">원</span>
+                </div>
+              </div>
+              <div class="field-group">
+                <label for="s-loan-rate">금리</label>
+                <div class="input-wrapper" id="wrap-s-loan-rate">
+                  <input type="text" id="s-loan-rate" inputmode="decimal" placeholder="6" autocomplete="off">
+                  <span class="unit">%</span>
+                </div>
+              </div>
+              <div class="s-hint">원금 상환은 가정하지 않습니다.</div>
+            </div>
+            <div class="s-col-out">
+              <div class="s-col-label">결과</div>
+              <div class="s-out-row"><span>연이자</span><strong id="s-annual-int">-</strong></div>
+              <div class="s-out-row"><span>월이자</span><strong id="s-monthly-int">-</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ③ 공실 보유 -->
+        <div class="card s-stage-card">
+          <div class="s-stage-head">
+            <span class="s-stage-no s-no-3">3</span>
+            <span class="s-stage-title">공실 보유</span>
+            <span class="s-stage-sub">임차인 구하기 전</span>
+          </div>
+          <div class="s-stage-body">
+            <div class="s-col-in">
+              <div class="s-col-label">입력</div>
+              <div class="field-group">
+                <label for="s-mgmt-pp">평당 관리비</label>
+                <div class="input-wrapper" id="wrap-s-mgmt-pp">
+                  <input type="text" id="s-mgmt-pp" inputmode="numeric" placeholder="0" autocomplete="off">
+                  <span class="unit">원</span>
+                </div>
+              </div>
+              <div class="field-group">
+                <label for="s-vacancy-mo">공실 개월수</label>
+                <div class="input-wrapper" id="wrap-s-vacancy-mo">
+                  <input type="text" id="s-vacancy-mo" inputmode="numeric" placeholder="0" autocomplete="off">
+                  <span class="unit">개월</span>
+                </div>
+              </div>
+              <div class="s-hint">임차인이 없는 기간 — 월지출만 누적됩니다.</div>
+            </div>
+            <div class="s-col-out">
+              <div class="s-col-label">결과</div>
+              <div class="s-out-row"><span>월관리비</span><strong id="s-monthly-mgmt">-</strong></div>
+              <div class="s-out-row"><span>월지출</span><strong id="s-monthly-out">-</strong></div>
+              <div class="s-out-row"><span>공실기간 지출</span><strong id="s-vacancy-cost">-</strong></div>
+              <div class="s-out-row s-out-total"><span>공실기간 필요</span><strong id="s-need-vacancy-2">-</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ④ 임대 -->
+        <div class="card s-stage-card">
+          <div class="s-stage-head">
+            <span class="s-stage-no s-no-4">4</span>
+            <span class="s-stage-title">임대</span>
+            <span class="s-stage-sub">임차인 입주 ~ 매도까지</span>
+          </div>
+          <div class="s-stage-body">
+            <div class="s-col-in">
+              <div class="s-col-label">입력</div>
+              <div class="field-group">
+                <label for="s-deposit">보증금</label>
+                <div class="input-wrapper" id="wrap-s-deposit">
+                  <input type="text" id="s-deposit" inputmode="numeric" placeholder="0" autocomplete="off">
+                  <span class="unit">원</span>
+                </div>
+              </div>
+              <div class="field-group">
+                <label for="s-rent">월 임대료</label>
+                <div class="input-wrapper" id="wrap-s-rent">
+                  <input type="text" id="s-rent" inputmode="numeric" placeholder="0" autocomplete="off">
+                  <span class="unit">원</span>
+                </div>
+              </div>
+              <div class="field-group">
+                <label for="s-hold-mo">임차 개월수</label>
+                <div class="input-wrapper" id="wrap-s-hold-mo">
+                  <input type="text" id="s-hold-mo" inputmode="numeric" placeholder="0" autocomplete="off">
+                  <span class="unit">개월</span>
+                </div>
+              </div>
+              <div class="s-hint">임대료를 받으며 매도를 기다리는 기간.<br><b>0 = 임대 직후 바로 매도</b></div>
+            </div>
+            <div class="s-col-out">
+              <div class="s-col-label">결과</div>
+              <div class="s-out-row"><span>임대 후 월수입</span><strong id="s-monthly-income">-</strong></div>
+              <div class="s-out-row"><span>임대 후 수익</span><strong id="s-hold-income">-</strong></div>
+              <div class="s-out-row s-out-total"><span>임대계약 후 필요</span><strong id="s-need-lease-2">-</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ⑤ 매도 -->
+        <div class="card s-stage-card">
+          <div class="s-stage-head">
+            <span class="s-stage-no s-no-5">5</span>
+            <span class="s-stage-title">매도</span>
+            <span class="s-stage-sub">수익률 역산</span>
+          </div>
+          <div class="s-stage-body">
+            <div class="s-col-in">
+              <div class="s-col-label">입력</div>
+              <div class="field-group">
+                <label for="s-sale-yield">매매수익률</label>
+                <div class="input-wrapper" id="wrap-s-sale-yield">
+                  <input type="text" id="s-sale-yield" inputmode="decimal" placeholder="7" autocomplete="off">
+                  <span class="unit">%</span>
+                </div>
+              </div>
+              <div class="field-group">
+                <label for="s-tax-rate">양도세율</label>
+                <div class="input-wrapper" id="wrap-s-tax-rate">
+                  <input type="text" id="s-tax-rate" inputmode="decimal" placeholder="0" autocomplete="off">
+                  <span class="unit">%</span>
+                </div>
+              </div>
+              <div class="s-hint">매도가 = 연 임대료 ÷ 매매수익률 + 보증금</div>
+            </div>
+            <div class="s-col-out">
+              <div class="s-col-label">결과</div>
+              <div class="s-out-row"><span>매도가</span><strong id="s-sale-price-2">-</strong></div>
+              <div class="s-out-row"><span>양도세</span><strong id="s-tax">-</strong></div>
+              <div class="s-out-row s-out-total"><span>매도시점 수익</span><strong id="s-sale-net">-</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-reset s-reset-btn" onclick="resetAuction()">RESET</button>
+
       </main>
     </div>
 

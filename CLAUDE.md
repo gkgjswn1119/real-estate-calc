@@ -34,11 +34,12 @@ calculator/
 
 ## 현재 탭 구성
 
-| 탭 버튼 텍스트 | `data-tab` 값 | 페이지 ID | 용도 |
-|---|---|---|---|
-| 수익률 계산 | `main` | `page-main` | 임대 수익률, 적정매가 역산 |
-| 면적별 분석 | `area` | `page-area` | 면적별 수익률 테이블 + 차트 |
-| 상가 수익률 계산 | `commercial` | `page-commercial` | 경매 낙찰 → 상가 투자 ROE 계산 |
+| 탭 버튼 텍스트 | `data-tab` 값 | 페이지 ID | ID 접두사 | 용도 |
+|---|---|---|---|---|
+| 수익률 계산기 | `calc` | `page-calc` | (없음) | 임대 수익률, 적정매가 역산 |
+| 면적별 분석 | `graph` | `page-graph` | `g-` | 면적별 수익률 테이블 + 차트 |
+| 상가 수익률 계산 | `commercial` | `page-commercial` | `c-` | 경매 낙찰 → 상가 투자 ROE 계산 |
+| 경매 시나리오 | `auction` | `page-auction` | `s-` | 취득→공실→임대→매도 전 과정 최종수익 |
 
 ---
 
@@ -48,16 +49,18 @@ calculator/
 
 ```html
 <!-- 네비게이션 -->
-<nav>
-  <button class="tab" data-tab="main">수익률 계산</button>
-  <button class="tab" data-tab="area">면적별 분석</button>
+<nav class="tab-bar">
+  <button class="tab active" data-tab="calc">수익률 계산기</button>
+  <button class="tab" data-tab="graph">면적별 분석</button>
   <button class="tab" data-tab="commercial">상가 수익률 계산</button>
+  <button class="tab" data-tab="auction">경매 시나리오</button>
 </nav>
 
 <!-- 각 탭 페이지 -->
-<section id="page-main">...</section>
-<section id="page-area" style="display:none">...</section>
-<section id="page-commercial" style="display:none">...</section>
+<div id="page-calc" class="page">...</div>
+<div id="page-graph" class="page" style="display:none">...</div>
+<div id="page-commercial" class="page" style="display:none">...</div>
+<div id="page-auction" class="page" style="display:none">...</div>
 ```
 
 ### JS 탭 전환 로직 (app.js)
@@ -67,15 +70,13 @@ document.querySelectorAll('.tab').forEach(btn => {
   btn.addEventListener('click', function () {
     const target = this.dataset.tab;
     // 각 탭 페이지를 show/hide
-    document.getElementById('page-main').style.display       = target === 'main'       ? '' : 'none';
-    document.getElementById('page-area').style.display       = target === 'area'       ? '' : 'none';
+    document.getElementById('page-calc').style.display       = target === 'calc'       ? '' : 'none';
+    document.getElementById('page-graph').style.display      = target === 'graph'      ? '' : 'none';
     document.getElementById('page-commercial').style.display = target === 'commercial' ? '' : 'none';
-    // 활성 탭 하이라이트
-    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-    this.classList.add('active');
+    document.getElementById('page-auction').style.display    = target === 'auction'    ? '' : 'none';
     // 탭 진입 시 계산 실행
-    if (target === 'area') renderAreaTable();
     if (target === 'commercial') calcCommercial();
+    if (target === 'auction') calcAuction();
   });
 });
 ```
@@ -123,6 +124,50 @@ ROE         = (월현금흐름 × 12) / 실투자금
 
 ROE 색상: 양수 → 초록(`#059669`, `.c-pos`), 음수 → 빨강(`.c-neg`)
 
+### 탭 4: 경매 시나리오 (`auction`)
+
+원본 `계산기.xlsx`(Sheet1 A1:F26)를 1:1 이식한 탭. 명세서는 `Downloads/계산기_명세서.md`.
+
+입력 16개(전부 공란 시작, 기본값 없음): 평수·감정가·낙찰가·취득비율·평당명도비·평당철거비·미납관리비·대출·금리·평당관리비·공실개월수·보증금·월임대료·매매수익률·양도세율·보유개월수
+
+수식 17개 — `app.js`의 `calcAuction()`에 엑셀 셀 번호가 주석으로 병기되어 있음:
+
+```
+취득비(B3)      = 낙찰가 × 취득비율
+명도비(B5)      = 평당명도비 × 평수
+철거비(B7)      = 평당철거비 × 평수
+연이자(B9)      = 대출 × 금리
+월이자(B10)     = 연이자 / 12
+월관리비(B12)   = 평당관리비 × 평수
+월지출(B16)     = 월이자 + 월관리비
+공실기간지출(B17) = 월지출 × 공실개월수
+매도가(B18)     = (월임대료 × 12 / 매매수익률) + 보증금
+임대후월수입(B19) = 월임대료 − 월이자
+양도세(B20)     = (매도가 − (낙찰가 + 취득비)) × 양도세율
+취득시점필요(B21) = 낙찰가 − 대출 + 취득비 + 명도비 + 철거비 + 미납관리비
+공실기간필요(B22) = B21의 항목 전부 + 공실기간지출
+임대계약시점필요(B23) = B22 − 보증금
+임대후수익(B24) = 임대후월수입 × 보유개월수
+매도시점수익(B25) = 매도가 − 양도세 − 대출
+최종수익(B26)   = 매도시점수익 − B22 + 임대후수익
+```
+
+**⚠️ 원본 엑셀의 의도적 특성 — 임의로 "고치지 말 것"**:
+
+1. 감정가는 어떤 수식에도 참조되지 않음 (순수 참고 표시값)
+2. 임대후월수입(B19)에 관리비 미차감 — 임차인 부담 가정. 공실 시 월지출(B16)에는 포함됨
+3. 매도시점수익(B25)에서 보증금 반환 미차감 — 매수자 승계 가정(그래서 B18에 보증금을 더함)
+4. 양도세 취득원가 = 낙찰가 + 취득비만. 명도비·철거비·미납관리비 불인정
+5. 월이자는 `연이자/12` 2단계 구조 유지
+6. B22는 B21을 참조하지 않고 항목을 재나열
+7. 대출은 단순 거치식(원금 상환 없음)
+
+유일한 방어적 변경: 매매수익률 0/공란 시 원본은 `#DIV/0!`이지만 여기선 매도가·양도세·매도시점수익·최종수익을 `-`로 표시.
+
+화면 구성: 최종수익 히어로 → 필요현금 타임라인 → 공통계수(평수) → 단계 카드 5개(취득·금융·공실·임대·매도). 각 단계 카드는 좌측 입력 / 우측 결과 2열.
+
+검산: 명세서 §7 예시값 16개 입력 → **최종수익 15,386,072원** (17개 출력 전부 일치 확인됨)
+
 ---
 
 ## 코딩 컨벤션
@@ -130,9 +175,10 @@ ROE 색상: 양수 → 초록(`#059669`, `.c-pos`), 음수 → 빨강(`.c-neg`)
 ### ID 네임스페이싱
 
 기존 탭 ID와 충돌 방지를 위해 **각 탭마다 고유 접두사** 사용:
-- `main` 탭: 접두사 없음 (예: `area`, `rent`, `deposit`)
-- `area` 탭: `a-` 접두사 (예: `a-rpp`, `a-target-yield`)
+- `calc` 탭: 접두사 없음 (예: `area`, `rent`, `deposit`)
+- `graph` 탭: `g-` 접두사 (예: `g-rpp`, `g-yield`)
 - `commercial` 탭: `c-` 접두사 (예: `c-appraised`, `c-bid`, `c-roe`)
+- `auction` 탭: `s-` 접두사 (예: `s-bid`, `s-final-profit`)
 
 새 탭 추가 시 충돌하지 않는 접두사 하나 정해서 모든 ID에 적용.
 
@@ -198,7 +244,7 @@ C_ALL_INPUT_IDS.forEach(id => {
 오프라인 사용을 위해 주요 파일을 캐시. **배포할 때마다 캐시 버전 번호 올려야 함**:
 
 ```js
-const CACHE = 'real-estate-calc-v3';  // ← 배포마다 v4, v5... 증가
+const CACHE = 'real-estate-calc-v4';  // ← 배포마다 v5, v6... 증가
 ```
 
 버전을 올리지 않으면 모바일 PWA가 이전 버전 캐시를 계속 사용함.
@@ -237,6 +283,7 @@ git reset --hard pre-작업명   # 실제 롤백 (신중히)
 
 현재 태그:
 - `pre-commercial-tab`: 상가 수익률 계산 탭 추가 직전 상태
+- `pre-auction-tab`: 경매 시나리오 탭 추가 직전 상태 (로컬에만 존재, 미푸시)
 
 ---
 
@@ -339,5 +386,5 @@ PWA 설치는 반드시 GitHub Pages HTTPS URL에서 해야 함.
 
 - **탭 ID 충돌**: 기존 탭과 같은 ID 쓰면 JS/CSS가 엉킴 → 접두사 필수
 - **서비스 워커 캐시**: 버전 안 올리면 모바일에서 업데이트 안 됨
-- **CSS 탭 버튼**: 3개 탭이 한 줄에 들어가도록 font-size 13px, padding 11px 8px, `word-break:keep-all` 적용됨 — 탭 버튼 텍스트 너무 길면 레이아웃 깨질 수 있음
+- **CSS 탭 버튼**: 4개 탭이 한 줄에 들어가도록 font-size 12px, padding 11px 4px, `word-break:keep-all` 적용됨 — 탭 버튼 텍스트 너무 길면 레이아웃 깨질 수 있음. 5번째 탭을 추가하려면 `.tab-bar`를 가로 스크롤(`overflow-x:auto`)로 전환하는 게 낫다
 - **`start_url` 절대경로 금지**: GitHub Pages 하위 경로 배포 시 절대경로 `/index.html`이면 404

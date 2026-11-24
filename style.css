@@ -336,11 +336,11 @@ input::placeholder {
 
 .tab {
   flex: 1;
-  padding: 11px 8px;
+  padding: 11px 4px;
   border: none;
   background: transparent;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;
@@ -650,4 +650,365 @@ input::placeholder {
   flex: 1;
   min-width: 0;
   padding-bottom: 2px;
+}
+
+/* ── 경매 시나리오 탭 ──────────────────────────────── */
+
+/* 결론 히어로 */
+.s-hero-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  animation: slideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.s-hero-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.s-hero-aside {
+  text-align: right;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.s-hero-label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  margin-bottom: 5px;
+}
+
+.s-hero-big {
+  display: block;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: -0.8px;
+  line-height: 1.1;
+  word-break: break-all;
+}
+
+.s-hero-big.c-pos { color: #059669; }
+.s-hero-big.c-neg { color: var(--error); }
+
+.s-hero-sub {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+}
+
+.s-hero-formula {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  line-height: 1.45;
+}
+
+/* 카드 제목 */
+.s-card-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 12px;
+}
+
+/* 필요 현금 타임라인 */
+.s-timeline {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+}
+
+.s-tl-item {
+  flex: 1;
+  min-width: 0;
+  background: #F8FAFC;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 10px 8px;
+  text-align: center;
+}
+
+.s-tl-label {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.2px;
+  margin-bottom: 5px;
+  white-space: nowrap;
+}
+
+.s-tl-value {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: -0.3px;
+  word-break: break-all;
+  line-height: 1.2;
+}
+
+.s-tl-arrow {
+  display: flex;
+  align-items: center;
+  color: #94A3B8;
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
+  padding: 0 1px;
+}
+
+/* 공통 계수 (평수) */
+.s-common-card {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  box-shadow: none;
+}
+
+.s-common-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.s-common-field {
+  width: 120px;
+  flex-shrink: 0;
+  margin-bottom: 0;
+}
+
+.s-common-field label {
+  color: #92400E;
+}
+
+.s-common-note {
+  flex: 1;
+  min-width: 0;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: #92400E;
+  padding-top: 22px;
+}
+
+.s-common-note b {
+  font-weight: 700;
+}
+
+/* 단계 카드 */
+.s-stage-card {
+  padding: 16px 18px 18px;
+}
+
+.s-stage-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+
+.s-stage-no {
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.s-no-1 { background: rgba(37, 99, 235, 0.13);  color: #2563EB; }
+.s-no-2 { background: rgba(124, 58, 237, 0.13); color: #7C3AED; }
+.s-no-3 { background: rgba(217, 119, 6, 0.14);  color: #D97706; }
+.s-no-4 { background: rgba(5, 150, 105, 0.13);  color: #059669; }
+.s-no-5 { background: rgba(220, 38, 38, 0.12);  color: #DC2626; }
+
+.s-stage-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.s-stage-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 입력 | 결과 2열 */
+.s-stage-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.s-col-in {
+  padding-right: 13px;
+}
+
+.s-col-out {
+  padding-left: 13px;
+  border-left: 1px solid var(--border);
+}
+
+.s-col-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #94A3B8;
+  letter-spacing: 0.6px;
+  margin: 10px 0 9px;
+}
+
+/* 2열 안에서 입력 필드 축소 */
+.s-stage-body .field-group {
+  margin-bottom: 10px;
+}
+
+.s-stage-body label {
+  font-size: 10px;
+  letter-spacing: 0.2px;
+  margin-bottom: 4px;
+  text-transform: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.s-stage-body .input-wrapper {
+  border-radius: 7px;
+}
+
+.s-stage-body .input-wrapper input {
+  padding: 9px 2px 9px 9px;
+  font-size: 13.5px;
+  min-width: 0;
+}
+
+.s-stage-body .unit {
+  padding: 0 8px 0 2px;
+  font-size: 11px;
+}
+
+/* 결과 행 */
+.s-out-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px 0;
+  border-bottom: 1px solid #F1F5F9;
+  font-size: 11.5px;
+}
+
+.s-out-row:last-child {
+  border-bottom: none;
+}
+
+.s-out-row span {
+  color: var(--text-muted);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.s-out-row strong {
+  font-weight: 700;
+  color: var(--text);
+  text-align: right;
+  word-break: break-all;
+  min-width: 0;
+}
+
+.s-out-row strong.c-pos { color: #059669; }
+.s-out-row strong.c-neg { color: var(--error); }
+
+/* 단계 소계 */
+.s-out-total {
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1.5px solid var(--border);
+  border-bottom: none;
+}
+
+.s-out-total span {
+  font-weight: 700;
+  color: #475569;
+}
+
+.s-out-total strong {
+  color: var(--primary);
+  font-weight: 800;
+  font-size: 12px;
+}
+
+/* 입력 칸 아래 힌트 */
+.s-hint {
+  font-size: 9.5px;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin-top: 8px;
+}
+
+.s-hint b {
+  font-weight: 700;
+  color: #475569;
+}
+
+/* 보조 설명 문구 */
+.s-note {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 10px;
+}
+
+/* RESET 버튼 */
+.s-reset-btn {
+  margin-top: 2px;
+}
+
+/* 아주 좁은 화면에서는 입력/결과를 위아래로 */
+@media (max-width: 359px) {
+  .s-stage-body {
+    grid-template-columns: 1fr;
+  }
+  .s-col-in {
+    padding-right: 0;
+  }
+  .s-col-out {
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    margin-top: 6px;
+  }
+  .s-hero-card {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .s-hero-aside {
+    text-align: left;
+  }
+  .s-common-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .s-common-note {
+    padding-top: 0;
+  }
 }

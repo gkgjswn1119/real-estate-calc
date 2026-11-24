@@ -211,7 +211,9 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.getElementById('page-calc').style.display       = target === 'calc'       ? '' : 'none';
     document.getElementById('page-graph').style.display      = target === 'graph'      ? '' : 'none';
     document.getElementById('page-commercial').style.display = target === 'commercial' ? '' : 'none';
+    document.getElementById('page-auction').style.display    = target === 'auction'    ? '' : 'none';
     if (target === 'commercial') calcCommercial();
+    if (target === 'auction') calcAuction();
   });
 });
 
@@ -502,6 +504,116 @@ function resetCommercial() {
   updateLoanTypeUI('2');
   calcCommercial();
 }
+
+// ── 경매 시나리오 탭 ──────────────────────────────────────────────────────────
+// 원본 계산기.xlsx(Sheet1 A1:F26)의 수식 17개를 그대로 이식.
+// 엑셀 셀 번호를 주석으로 병기한다. 로직은 원본과 100% 동일.
+
+const S_MONEY_IDS = [
+  's-appraised', 's-bid', 's-evict-pp', 's-demo-pp', 's-loan',
+  's-mgmt-pp', 's-unpaid', 's-deposit', 's-rent',
+];
+
+S_MONEY_IDS.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) applyCommaFormat(el);
+});
+
+function calcAuction() {
+  // ── 입력 (엑셀 Bold 셀 16개) — 공란은 0으로 취급
+  const area       = cFromId('s-area')       ?? 0;  // F1  평수
+  /* 감정가(B1)는 어떤 수식에도 참조되지 않는다 — 참고 표시용 */
+  const bid        = cFromId('s-bid')        ?? 0;  // B2  낙찰가
+  const acqRate    = cPct('s-acq-rate')      ?? 0;  // D3  취득비율
+  const evictPP    = cFromId('s-evict-pp')   ?? 0;  // B4  평당명도비
+  const demoPP     = cFromId('s-demo-pp')    ?? 0;  // B6  평당철거비
+  const loan       = cFromId('s-loan')       ?? 0;  // B8  대출
+  const loanRate   = cPct('s-loan-rate')     ?? 0;  // D9  금리
+  const mgmtPP     = cFromId('s-mgmt-pp')    ?? 0;  // B11 평당관리비
+  const unpaid     = cFromId('s-unpaid')     ?? 0;  // B13 미납관리비
+  const deposit    = cFromId('s-deposit')    ?? 0;  // B14 보증금
+  const rent       = cFromId('s-rent')       ?? 0;  // B15 임대료
+  const saleYield  = cPct('s-sale-yield')    ?? 0;  // D18 매매수익률
+  const taxRate    = cPct('s-tax-rate')      ?? 0;  // D20 양도세율
+  const vacancyMo  = cFromId('s-vacancy-mo') ?? 0;  // F2  공실개월수
+  const holdMo     = cFromId('s-hold-mo')    ?? 0;  // F3  임차후매도까지개월수
+
+  // ── 수식 (엑셀과 1:1)
+  const acqCost       = bid * acqRate;                   // B3  =B2*D3
+  const evict         = evictPP * area;                  // B5  =B4*F1
+  const demo          = demoPP * area;                   // B7  =B6*F1
+  const annualInt     = loan * loanRate;                 // B9  =B8*D9
+  const monthlyInt    = annualInt / 12;                  // B10 =B9/12
+  const monthlyMgmt   = mgmtPP * area;                   // B12 =B11*F1
+  const monthlyOut    = monthlyInt + monthlyMgmt;        // B16 =B10+B12
+  const vacancyCost   = monthlyOut * vacancyMo;          // B17 =B16*F2
+
+  // B18 =((B15*12)/D18)+B14 — 원본은 D18=0일 때 #DIV/0!. 여기선 '-' 처리.
+  const salePrice     = saleYield > 0 ? (rent * 12) / saleYield + deposit : null;
+
+  const monthlyIncome = rent - monthlyInt;               // B19 =B15-B10 (관리비 미차감)
+
+  // B20 =(B18-(B2+B3))*D20 — 취득원가는 낙찰가+취득비만
+  const tax           = salePrice === null ? null : (salePrice - (bid + acqCost)) * taxRate;
+
+  const needAcq       = bid - loan + acqCost + evict + demo + unpaid;                // B21
+  const needVacancy   = bid - loan + acqCost + evict + demo + unpaid + vacancyCost;  // B22 (항목 재나열)
+  const needLease     = needVacancy - deposit;           // B23 =B22-B14
+  const holdIncome    = monthlyIncome * holdMo;          // B24 =B19*F3
+
+  // B25 =B18-B20-B8 — 보증금 반환은 차감하지 않음(매수자 승계 가정)
+  const saleNet       = salePrice === null ? null : salePrice - tax - loan;
+
+  // B26 =B25-B22+B24 — 최종 결론
+  const finalProfit   = saleNet === null ? null : saleNet - needVacancy + holdIncome;
+
+  // ── 렌더
+  // 일부 값은 상단 요약(타임라인/히어로)과 단계 카드에 두 번 표시된다.
+  // '-2' 접미사 ID가 단계 카드 쪽이며, 아래 sSet이 둘 다 채운다.
+  const sSet = (id, v) => {
+    const txt = v === null ? '-' : cFmtMoney(v);
+    [id, id + '-2'].forEach(k => {
+      const el = document.getElementById(k);
+      if (el) el.textContent = txt;
+    });
+  };
+
+  const finalEl = document.getElementById('s-final-profit');
+  finalEl.textContent = finalProfit === null ? '-' : cFmtMoney(finalProfit);
+  finalEl.className   = 's-hero-big' +
+    (finalProfit === null ? '' : finalProfit >= 0 ? ' c-pos' : ' c-neg');
+
+  sSet('s-sale-price', salePrice);
+  sSet('s-need-acq',   needAcq);
+  sSet('s-need-lease', needLease);
+
+  sSet('s-acq-cost',     acqCost);
+  sSet('s-evict',        evict);
+  sSet('s-demo',         demo);
+  sSet('s-annual-int',   annualInt);
+  sSet('s-monthly-int',  monthlyInt);
+  sSet('s-monthly-mgmt', monthlyMgmt);
+  sSet('s-monthly-out',  monthlyOut);
+  sSet('s-vacancy-cost', vacancyCost);
+  sSet('s-need-vacancy', needVacancy);
+
+  const incomeEl = document.getElementById('s-monthly-income');
+  incomeEl.textContent = cFmtMoney(monthlyIncome);
+  incomeEl.className   = monthlyIncome >= 0 ? 'c-pos' : 'c-neg';
+
+  sSet('s-hold-income', holdIncome);
+  sSet('s-tax',         tax);
+  sSet('s-sale-net',    saleNet);
+}
+
+function resetAuction() {
+  // 기본값 없음 — 원본 엑셀의 숫자는 예시값이므로 전부 공란으로 되돌린다.
+  document.querySelectorAll('#page-auction input').forEach(el => { el.value = ''; });
+  calcAuction();
+}
+
+document.querySelectorAll('#page-auction input')
+  .forEach(el => el.addEventListener('input', calcAuction));
 
 // ─────────────────────────────────────────────────────────────────────────────
 
